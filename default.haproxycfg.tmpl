@@ -3,8 +3,8 @@ global
   log 127.0.0.1 local1 notice
   daemon
   maxconn 4096
-  user haproxy
-  group haproxy
+  tune.ssl.default-dh-param 2048
+
   # stats socket {{haproxySocketPath}} user USER_RUNNING_NODE_PROCESS level admin
   stats socket {{haproxySocketPath}} level admin
 
@@ -27,11 +27,13 @@ global
     stats auth showme:showme
 
 {{#each frontends}}
-  frontend {{name}}
+  frontend {{key}}
+    option forwardfor
+    http-request set-header X-Forwarded-Proto https if { ssl_fc }
     {{frontendHelper this}}
 {{/each}}
 
 {{#each backends}}
-  backend {{name}}
+  backend {{key}}
     {{backendHelper this}}
 {{/each}}
